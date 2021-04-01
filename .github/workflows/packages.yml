@@ -51,12 +51,16 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libzstd-dev
+        sudo apt install libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libzstd-dev libcurl4-openssl-dev
 
     - name: Install Qt
       run: |
         ./dist/install-qt.sh --version ${QT_VERSION} qtbase qtdeclarative qtscript qtsvg qtimageformats qttools icu | tee -a $GITHUB_PATH
         ./dist/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
+
+    - name: Install sentry-cli
+      run: |
+        curl -sL https://sentry.io/get-cli/ | bash
 
     - name: Setup Qbs
       run: |
@@ -64,9 +68,24 @@ jobs:
         qbs setup-toolchains --detect
         qbs config defaultProfile x86_64-linux-gnu-gcc-9
 
+    - name: Build Sentry
+      run: |
+        wget https://github.com/getsentry/sentry-native/releases/download/0.4.8/sentry-native.zip
+        mkdir sentry-native
+        pushd sentry-native
+        unzip ../sentry-native.zip
+        cmake -B build --config RelWithDebInfo .
+        cmake --build build --config RelWithDebInfo --parallel
+        cmake --install build --prefix install
+        popd
+
     - name: Build Tiled
       run: |
-        qbs install --install-root Tiled config:release qbs.installPrefix:/usr projects.Tiled.enableZstd:true
+        qbs install --install-root Tiled config:release qbs.installPrefix:/usr projects.Tiled.enableZstd:true projects.Tiled.sentry:true
+
+    - name: Upload symbols to Sentry
+      run: |
+        sentry-cli --org mapeditor --project tiled .
 
     - name: Build AppImage
       run: |
@@ -139,6 +158,10 @@ jobs:
       run: |
         sudo ./dist/install-qt.sh --version ${QT_VERSION} qtbase qtdeclarative qtscript qtsvg qtimageformats qttools | tee -a $GITHUB_PATH
         sudo ./dist/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
+
+    - name: Install sentry-cli
+      run: |
+        brew install getsentry/tools/sentry-cli
 
     - name: Setup Qbs
       run: |
