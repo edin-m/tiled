@@ -64,7 +64,7 @@ jobs:
 
     - name: Upgrade CMake
       run: |
-        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.sh
+        curl -sLO https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.sh
         chmod +x ./cmake-3.20.0-linux-x86_64.sh
         ./cmake-3.20.0-linux-x86_64.sh --skip-license
         which cmake
@@ -78,13 +78,15 @@ jobs:
 
     - name: Build Sentry
       run: |
-        wget https://github.com/getsentry/sentry-native/releases/download/0.4.8/sentry-native.zip
+        curl -sLO https://github.com/getsentry/sentry-native/releases/download/0.4.8/sentry-native.zip
         mkdir sentry-native
         pushd sentry-native
-        unzip ../sentry-native.zip
-        cmake -B build --config RelWithDebInfo .
-        cmake --build build --config RelWithDebInfo --parallel
-        cmake --install build --prefix install
+        unzip -q ../sentry-native.zip
+        cmake --version
+        cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        cmake --build build --parallel
+        cmake --install build --prefix install --config RelWithDebInfo
+        find install
         popd
 
     - name: Build Tiled
