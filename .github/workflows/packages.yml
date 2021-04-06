@@ -81,7 +81,7 @@ jobs:
         unzip -q ../sentry-native.zip
         cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build build --parallel
-        cmake --install build --prefix install --config RelWithDebInfo
+        cmake --install build --prefix /usr --config RelWithDebInfo
         popd
 
     - name: Build Tiled
