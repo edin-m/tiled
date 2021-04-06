@@ -53,28 +53,26 @@ jobs:
         sudo apt update
         sudo apt install libgl1-mesa-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libzstd-dev libcurl4-openssl-dev
 
-    # - name: Install Qt
-    #   run: |
-    #     ./dist/install-qt.sh --version ${QT_VERSION} qtbase qtdeclarative qtscript qtsvg qtimageformats qttools icu | tee -a $GITHUB_PATH
-    #     ./dist/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
+    - name: Install Qt
+      run: |
+        ./dist/install-qt.sh --version ${QT_VERSION} qtbase qtdeclarative qtscript qtsvg qtimageformats qttools icu | tee -a $GITHUB_PATH
+        ./dist/install-qt.sh --version ${QTCREATOR_VERSION} qtcreator | tee -a $GITHUB_PATH
 
     - name: Install sentry-cli
       run: |
         curl -sL https://sentry.io/get-cli/ | bash
 
-    - name: Upgrade CMake
+    - name: Install CMake
       run: |
         curl -sLO https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.sh
         chmod +x ./cmake-3.20.0-linux-x86_64.sh
         ./cmake-3.20.0-linux-x86_64.sh --skip-license
-        which cmake
-        cmake --version
 
-    # - name: Setup Qbs
-    #   run: |
-    #     qbs --version
-    #     qbs setup-toolchains --detect
-    #     qbs config defaultProfile x86_64-linux-gnu-gcc-9
+    - name: Setup Qbs
+      run: |
+        qbs --version
+        qbs setup-toolchains --detect
+        qbs config defaultProfile x86_64-linux-gnu-gcc-9
 
     - name: Build Sentry
       run: |
@@ -82,11 +80,9 @@ jobs:
         mkdir sentry-native
         pushd sentry-native
         unzip -q ../sentry-native.zip
-        cmake --version
         cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
         cmake --build build --parallel
         cmake --install build --prefix install --config RelWithDebInfo
-        find install
         popd
 
     - name: Build Tiled
