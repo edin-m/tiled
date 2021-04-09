@@ -45,42 +45,7 @@
 #include "qtcompat_p.h"
 
 #ifdef TILED_SENTRY
-
-#include <QDir>
-#include <QStandardPaths>
-
-#include <sentry.h>
-
-#define STRINGIFY(x) #x
-#define AS_STRING(x) STRINGIFY(x)
-
-class Sentry
-{
-public:
-    Sentry()
-    {
-        sentry_options_t *options = sentry_options_new();
-        sentry_options_set_dsn(options, "https://6c72ea2c9d024333bae90e40bc1d41e0@o326665.ingest.sentry.io/1835065");
-        sentry_options_set_release(options, "tiled@" AS_STRING(TILED_VERSION));
-#ifdef QT_DEBUG
-        sentry_options_set_debug(options, 1);
-#endif
-
-        const QString cacheLocation { QStandardPaths::writableLocation(QStandardPaths::CacheLocation) };
-        if (!cacheLocation.isEmpty()) {
-            const QString databasePath = QDir{cacheLocation}.filePath(QStringLiteral("sentry"));
-            sentry_options_set_database_path(options, databasePath.toLocal8Bit().constData());
-        }
-
-        sentry_init(options);
-    }
-
-    ~Sentry()
-    {
-        sentry_shutdown();
-    }
-};
-
+#include "sentryhelper.h"
 #endif // TILED_SENTRY
 
 #include <memory>
