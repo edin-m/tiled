@@ -1577,7 +1577,7 @@ void MainWindow::openCrashReporterPopup()
 
     auto label = new QLabel;
     label->setTextFormat(Qt::RichText);
-    label->setText(tr("<html>Enable crash reporting? <a href=\"https://www.mapeditor.org/crash-reporting\">more information</a></html>"));
+    label->setText(tr("<html>Enable anonymous crash reporting? <a href=\"https://www.mapeditor.org/crash-reporting\">more information</a></html>"));
 
     auto yesButton = new QPushButton(tr("&Yes"));
     auto noButton = new QPushButton(tr("&No"));

@@ -119,7 +119,7 @@
           <item>
            <widget class="QCheckBox" name="sendCrashReports">
             <property name="text">
-             <string>Enable sending crash reports</string>
+             <string>Enable sending anonymous crash reports</string>
             </property>
            </widget>
           </item>
