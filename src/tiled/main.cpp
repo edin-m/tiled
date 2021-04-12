@@ -31,6 +31,7 @@
 #include "pluginmanager.h"
 #include "preferences.h"
 #include "scriptmanager.h"
+#include "sentryhelper.h"
 #include "stylehelper.h"
 #include "tiledapplication.h"
 #include "tileset.h"
@@ -43,10 +44,6 @@
 #include <QtPlugin>
 
 #include "qtcompat_p.h"
-
-#ifdef TILED_SENTRY
-#include "sentryhelper.h"
-#endif // TILED_SENTRY
 
 #include <memory>
 

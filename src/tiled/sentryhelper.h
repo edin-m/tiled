@@ -19,6 +19,7 @@
  */
 
 #pragma once
+#ifdef TILED_SENTRY
 
 namespace Tiled {
 
@@ -28,15 +29,22 @@ public:
     Sentry();
     ~Sentry();
 
-    void initialize();
-    void shutdown();
+    static Sentry *instance() { return sInstance; }
 
-    static bool consentGiven();
-    static bool consentRevoked();
-    static bool consentUnknown();
+    // Matches sentry_user_consent_t in sentry.h
+    enum UserConsent {
+        ConsentUnknown = -1,
+        ConsentGiven = 1,
+        ConsentRevoked = 0,
+    };
+
+    UserConsent userConsent() const;
+    void setUserConsent(UserConsent consent);
 
 private:
-    bool mInitialized = false;
+    static Sentry *sInstance;
 };
 
 } // namespace Tiled
+
+#endif // TILED_SENTRY

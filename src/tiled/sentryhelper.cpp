@@ -30,27 +30,18 @@
 
 namespace Tiled {
 
+Sentry *Sentry::sInstance;
+
 Sentry::Sentry()
 {
-    if (consentGiven())
-        initialize();
-}
-
-Sentry::~Sentry()
-{
-    shutdown();
-}
-
-void Sentry::initialize()
-{
-    if (mInitialized)
-        return;
+    sInstance = this;
 
     sentry_options_t *options = sentry_options_new();
     sentry_options_set_dsn(options, "https://6c72ea2c9d024333bae90e40bc1d41e0@o326665.ingest.sentry.io/1835065");
+    sentry_options_set_require_user_consent(options, true);
     sentry_options_set_release(options, "tiled@" AS_STRING(TILED_VERSION));
 #ifdef QT_DEBUG
-    sentry_options_set_debug(options, 1);
+    sentry_options_set_debug(options, true);
 #endif
 
     const QString cacheLocation { QStandardPaths::writableLocation(QStandardPaths::CacheLocation) };
@@ -60,30 +51,32 @@ void Sentry::initialize()
     }
 
     sentry_init(options);
-    mInitialized = true;
 }
 
-void Sentry::shutdown()
+Sentry::~Sentry()
 {
-    if (mInitialized) {
-        sentry_shutdown();
-        mInitialized = false;
+    sentry_shutdown();
+    sInstance = nullptr;
+}
+
+Sentry::UserConsent Sentry::userConsent() const
+{
+    return static_cast<UserConsent>(sentry_user_consent_get());
+}
+
+void Sentry::setUserConsent(UserConsent consent)
+{
+    switch (consent) {
+    case ConsentUnknown:
+        sentry_user_consent_reset();
+        break;
+    case ConsentGiven:
+        sentry_user_consent_give();
+        break;
+    case ConsentRevoked:
+        sentry_user_consent_revoke();
+        break;
     }
-}
-
-bool Sentry::consentGiven()
-{
-    return sentry_user_consent_get() == SENTRY_USER_CONSENT_GIVEN;
-}
-
-bool Sentry::consentRevoked()
-{
-    return sentry_user_consent_get() == SENTRY_USER_CONSENT_REVOKED;
-}
-
-bool Sentry::consentUnknown()
-{
-    return sentry_user_consent_get() == SENTRY_USER_CONSENT_UNKNOWN;
 }
 
 } // namespace Tiled
