@@ -319,17 +319,6 @@ ObjectSelectionTool::ObjectSelectionTool(QObject *parent)
                          parent)
     , mSelectionRectangle(new SelectionRectangle)
     , mOriginIndicator(new OriginIndicator)
-    , mMousePressed(false)
-    , mHoveredObject(nullptr)
-    , mHoveredHandle(nullptr)
-    , mClickedObject(nullptr)
-    , mClickedOriginIndicator(nullptr)
-    , mClickedRotateHandle(nullptr)
-    , mClickedResizeHandle(nullptr)
-    , mResizingLimitHorizontal(false)
-    , mResizingLimitVertical(false)
-    , mMode(Resize)
-    , mAction(NoAction)
 {
     for (int i = 0; i < CornerAnchorCount; ++i)
         mRotateHandles[i] = new RotateHandle(static_cast<AnchorPosition>(i));
@@ -503,6 +492,7 @@ void ObjectSelectionTool::mouseMoved(const QPointF &pos,
     switch (mAction) {
     case Selecting:
         mSelectionRectangle->setRectangle(QRectF(mStart, pos).normalized());
+        updateSelection(pos, modifiers, false);
         break;
     case Moving:
         updateMovingItems(pos, modifiers);
@@ -1098,7 +1088,7 @@ void ObjectSelectionTool::updateHover(const QPointF &pos)
 }
 
 void ObjectSelectionTool::updateSelection(const QPointF &pos,
-                                          Qt::KeyboardModifiers modifiers)
+                                          Qt::KeyboardModifiers modifiers, bool apply)
 {
     QRectF rect = QRectF(mStart, pos).normalized();
 
@@ -1108,7 +1098,10 @@ void ObjectSelectionTool::updateSelection(const QPointF &pos,
 
     QList<MapObject*> selectedObjects;
 
-    const QList<QGraphicsItem *> &items = mapScene()->items(rect);
+    const Qt::ItemSelectionMode selectionMode = (modifiers & Qt::AltModifier) ? Qt::IntersectsItemShape
+                                                                              : Qt::ContainsItemShape;
+    const QList<QGraphicsItem *> &items = mapScene()->items(rect, selectionMode);
+
     for (QGraphicsItem *item : items) {
         if (!item->isEnabled())
             continue;
@@ -1119,15 +1112,20 @@ void ObjectSelectionTool::updateSelection(const QPointF &pos,
 
     filterMapObjects(selectedObjects);
 
-    if (modifiers & (Qt::ControlModifier | Qt::ShiftModifier)) {
-        for (MapObject *object : mapDocument()->selectedObjects())
-            if (!selectedObjects.contains(object))
-                selectedObjects.append(object);
-    } else {
-        setMode(Resize);    // new selection resets edit mode
-    }
+    if (apply) {
+        if (modifiers & (Qt::ControlModifier | Qt::ShiftModifier)) {
+            for (MapObject *object : mapDocument()->selectedObjects())
+                if (!selectedObjects.contains(object))
+                    selectedObjects.append(object);
+        } else {
+            setMode(Resize);    // new selection resets edit mode
+        }
 
-    mapDocument()->setSelectedObjects(selectedObjects);
+        mapDocument()->setAboutToBeSelectedObjects({});
+        mapDocument()->setSelectedObjects(selectedObjects);
+    } else {
+        mapDocument()->setAboutToBeSelectedObjects(selectedObjects);
+    }
 }
 
 void ObjectSelectionTool::startSelecting()

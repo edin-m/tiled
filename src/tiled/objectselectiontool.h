@@ -26,6 +26,7 @@
 #include <QSet>
 #include <QVector>
 
+#include <array>
 #include <memory>
 
 class QGraphicsItem;
@@ -89,7 +90,7 @@ private:
 
     void updateHover(const QPointF &pos);
     void updateSelection(const QPointF &pos,
-                         Qt::KeyboardModifiers modifiers);
+                         Qt::KeyboardModifiers modifiers, bool apply = true);
 
     void startSelecting();
 
@@ -146,26 +147,26 @@ private:
 
     std::unique_ptr<SelectionRectangle> mSelectionRectangle;
     std::unique_ptr<QGraphicsItem> mOriginIndicator;
-    RotateHandle *mRotateHandles[4];
-    ResizeHandle *mResizeHandles[8];
-    bool mMousePressed;
+    std::array<RotateHandle*, 4> mRotateHandles;
+    std::array<ResizeHandle*, 8> mResizeHandles;
+    bool mMousePressed = false;
 
-    MapObject *mHoveredObject;
-    Handle *mHoveredHandle;
+    MapObject *mHoveredObject = nullptr;
+    Handle *mHoveredHandle = nullptr;
 
-    MapObject *mClickedObject;
-    OriginIndicator *mClickedOriginIndicator;
-    RotateHandle *mClickedRotateHandle;
-    ResizeHandle *mClickedResizeHandle;
+    MapObject *mClickedObject = nullptr;
+    OriginIndicator *mClickedOriginIndicator = nullptr;
+    RotateHandle *mClickedRotateHandle = nullptr;
+    ResizeHandle *mClickedResizeHandle = nullptr;
 
     QVector<MovingObject> mMovingObjects;
 
     QPointF mAlignPosition;
     QPointF mOriginPos;
-    bool mResizingLimitHorizontal;
-    bool mResizingLimitVertical;
-    Mode mMode;
-    Action mAction;
+    bool mResizingLimitHorizontal = false;
+    bool mResizingLimitVertical = false;
+    Mode mMode = Resize;
+    Action mAction = NoAction;
     QPointF mStart;
     QPointF mStartOffset;
     QPointF mLastMousePos;

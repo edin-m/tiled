@@ -67,6 +67,9 @@ public:
     MapObject *mapObject() const { return mObject; }
     void syncWithMapObject(const MapRenderer &renderer);
 
+    bool isHoverIndicator() const { return mIsHoveredIndicator; }
+    void setIsHoverIndicator(bool isHoverIndicator);
+
     QRectF boundingRect() const override;
     void paint(QPainter *painter,
                const QStyleOptionGraphicsItem *,
@@ -82,6 +85,7 @@ private:
     // Marching ants effect
     int mUpdateTimer = startTimer(100);
     int mOffset = 0;
+    bool mIsHoveredIndicator = false;
 };
 
 void MapObjectOutline::syncWithMapObject(const MapRenderer &renderer)
@@ -100,6 +104,15 @@ void MapObjectOutline::syncWithMapObject(const MapRenderer &renderer)
         prepareGeometryChange();
         mBoundingRect = bounds;
     }
+}
+
+void MapObjectOutline::setIsHoverIndicator(bool isHoverIndicator)
+{
+    if (mIsHoveredIndicator == isHoverIndicator)
+        return;
+
+    mIsHoveredIndicator = isHoverIndicator;
+    setOpacity(isHoverIndicator ? 0.5 : 1.0);
 }
 
 QRectF MapObjectOutline::boundingRect() const
@@ -253,6 +266,8 @@ ObjectSelectionItem::ObjectSelectionItem(MapDocument *mapDocument,
 
     connect(mapDocument, &MapDocument::selectedObjectsChanged,
             this, &ObjectSelectionItem::selectedObjectsChanged);
+    connect(mapDocument, &MapDocument::aboutToBeSelectedObjectsChanged,
+            this, &ObjectSelectionItem::aboutToBeSelectedObjectsChanged);
 
     connect(mapDocument, &MapDocument::mapChanged,
             this, &ObjectSelectionItem::mapChanged);
@@ -400,6 +415,11 @@ void ObjectSelectionItem::selectedObjectsChanged()
 {
     addRemoveObjectLabels();
     addRemoveObjectOutlines();
+}
+
+void ObjectSelectionItem::aboutToBeSelectedObjectsChanged()
+{
+    addRemoveObjectHoverItems();
 }
 
 void ObjectSelectionItem::hoveredMapObjectChanged(MapObject *object,
@@ -751,6 +771,27 @@ void ObjectSelectionItem::addRemoveObjectOutlines()
 
     qDeleteAll(mObjectOutlines); // delete remaining items
     mObjectOutlines.swap(outlineItems);
+}
+
+void ObjectSelectionItem::addRemoveObjectHoverItems()
+{
+    QHash<MapObject*, MapObjectOutline*> hoverItems;
+    const MapRenderer &renderer = *mMapDocument->renderer();
+
+    for (MapObject *mapObject : mMapDocument->aboutToBeSelectedObjects()) {
+        auto hoverItem = mObjectHoverItems.take(mapObject);
+        if (!hoverItem) {
+            hoverItem = new MapObjectOutline(mapObject, this);
+            hoverItem->syncWithMapObject(renderer);
+            hoverItem->setEnabled(false);
+            hoverItem->setIsHoverIndicator(true);
+            hoverItem->setZValue(-1.0);     // show below selection outlines
+        }
+        hoverItems.insert(mapObject, hoverItem);
+    }
+
+    qDeleteAll(mObjectHoverItems); // delete remaining items
+    mObjectHoverItems.swap(hoverItems);
 }
 
 void ObjectSelectionItem::addRemoveObjectReferences()
