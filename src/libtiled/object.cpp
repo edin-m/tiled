@@ -143,38 +143,17 @@ QVariantMap Object::resolvedProperties() const
     return allProperties;
 }
 
-void Object::addComponent(const QString &name_)
+void Object::addComponent(const QString &name)
 {
-//  QStringList list;
-//  list << QCoreApplication::tr("Transformation") << QCoreApplication::tr("Physics");
-//  list << QCoreApplication::tr("Boss") << QCoreApplication::tr("Collectable");
-//  list << QCoreApplication::tr("Fruit") << QCoreApplication::tr("NPC");
-//  list << QCoreApplication::tr("Patrol") << QCoreApplication::tr("Sound");
-
-//  for (QString name : list) {
-//  const ObjectType *type = nullptr;
-//  for (const ObjectType &t : Object::objectTypes()) {
-//    if (t.name == name) {
-//      type = &t;
-//      break;
-//    }
-//  }
-
-
-QString name = name_;
   const ObjectType *type = nullptr;
   for (const ObjectType &t : Object::objectTypes()) {
-    qDebug() << "name" << t.name << name << t.name.compare(name);
     if (t.name.compare(name) == 0) {
       type = &t;
       break;
     }
   }
 
-    qDebug() << __FUNCTION__ << type << name;
-
   if (type) {
-    qDebug() << "found" << type->name;
     mComponentProperties[name] = Properties {};
     Properties &props = mComponentProperties[name];
 

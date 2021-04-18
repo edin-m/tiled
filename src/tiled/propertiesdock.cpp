@@ -42,6 +42,8 @@
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QFileInfo>
+#include <QTimer>
+#include <QApplication>
 
 namespace Tiled {
 
@@ -71,22 +73,24 @@ PropertiesDock::PropertiesDock(QWidget *parent)
     connect(mActionRenameProperty, &QAction::triggered,
             this, &PropertiesDock::renameProperty);
 
-    mActionAddComponent = new QAction(this);
-    mActionAddComponent->setEnabled(true);
-    mActionAddComponent->setIcon(QIcon(QLatin1String(":/images/16/add.png")));
-    mActionAddComponent->setMenu(new QMenu(this));
+    mButtonAddComponent = new QToolButton(this);
+    mButtonAddComponent->setEnabled(true);
+    mButtonAddComponent->setIcon(QIcon(QLatin1String(":/images/16/add.png")));
+    mButtonAddComponent->setMenu(new QMenu(this));
+    mButtonAddComponent->setPopupMode(QToolButton::InstantPopup);
 
-    mActionRemoveComponent = new QAction(this);
-    mActionRemoveComponent->setEnabled(true);
-    mActionRemoveComponent->setIcon(QIcon(QLatin1String(":/images/16/remove.png")));
-    mActionRemoveComponent->setMenu(new QMenu(this));
+    mButtonRemoveComponent = new QToolButton(this);
+    mButtonRemoveComponent->setEnabled(true);
+    mButtonRemoveComponent->setIcon(QIcon(QLatin1String(":/images/16/remove.png")));
+    mButtonRemoveComponent->setMenu(new QMenu(this));
+    mButtonRemoveComponent->setPopupMode(QToolButton::InstantPopup);
     setupComponentMenus();
 
     Utils::setThemeIcon(mActionAddProperty, "add");
     Utils::setThemeIcon(mActionRemoveProperty, "remove");
     Utils::setThemeIcon(mActionRenameProperty, "rename");
-    Utils::setThemeIcon(mActionAddComponent, "add");
-    Utils::setThemeIcon(mActionRemoveComponent, "remove");
+    Utils::setThemeIcon(mButtonAddComponent, "add");
+    Utils::setThemeIcon(mButtonRemoveComponent, "remove");
 
     QToolBar *toolBar = new QToolBar;
     toolBar->setFloatable(false);
@@ -99,8 +103,8 @@ PropertiesDock::PropertiesDock(QWidget *parent)
     QWidget* spacer = new QWidget();
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolBar->addWidget(spacer);
-    toolBar->addAction(mActionAddComponent);
-    toolBar->addAction(mActionRemoveComponent);
+    toolBar->addWidget(mButtonAddComponent);
+    toolBar->addWidget(mButtonRemoveComponent);
 
     QWidget *widget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(widget);
@@ -117,6 +121,9 @@ PropertiesDock::PropertiesDock(QWidget *parent)
             this, &PropertiesDock::showContextMenu);
     connect(mPropertyBrowser, &PropertyBrowser::selectedItemsChanged,
             this, &PropertiesDock::updateActions);
+
+    connect(Preferences::instance(), &Preferences::objectTypesChanged,
+            this, &PropertiesDock::setupComponentMenus);
 
     retranslateUi();
 }
@@ -199,8 +206,8 @@ void PropertiesDock::currentObjectChanged(Object *object)
                       object->typeId() == Object::MapObjectType;
       }
 
-      mActionAddComponent->setEnabled(isMapObject);
-      mActionRemoveComponent->setEnabled(isMapObject);
+      mButtonAddComponent->setEnabled(isMapObject);
+      mButtonRemoveComponent->setEnabled(isMapObject);
     }
 }
 
@@ -519,32 +526,19 @@ void PropertiesDock::showContextMenu(const QPoint &pos)
     }
 }
 
-QMenu* PropertiesDock::createAddComponentMenu()
+// TODO: move this to object.h/cpp
+static QStringList objectTypeNames()
 {
-  QMenu* menu = new QMenu(this);
-
-  // TODO: convert object types to string list
-  // TODO: enable/disable actions for components already part of the object
-
-  QStringList list;
-  list << tr("Transformation") << tr("Physics");
-  list << tr("Boss") << tr("Collectable");
-  list << tr("Fruit") << tr("NPC");
-  list << tr("Patrol") << tr("Sound");
-
-  for (QString str : list) {
-    QAction* action = menu->addAction(str);
-    action->setData(QVariant(str));
-    connect(action, &QAction::triggered, this, &PropertiesDock::onAddComponentAction);
-  }
-
-  return menu;
+  QStringList names;
+  for (const ObjectType &type : Object::objectTypes())
+    names.append(type.name);
+  return names;
 }
 
 void PropertiesDock::setupComponentMenus()
 {
-  QMenu *addMenu = mActionAddComponent->menu();
-  QMenu *removeMenu = mActionRemoveComponent->menu();
+  QMenu *addMenu = mButtonAddComponent->menu();
+  QMenu *removeMenu = mButtonRemoveComponent->menu();
 
   addMenu->clear();
   removeMenu->clear();
@@ -557,12 +551,7 @@ void PropertiesDock::setupComponentMenus()
     return;
   }
 
-  QStringList list;
-  // TODO: populate list usgin object types
-  list << tr("Transformation") << tr("Physics");
-  list << tr("Boss") << tr("Collectable");
-  list << tr("Fruit") << tr("NPC");
-  list << tr("Patrol") << tr("Sound");
+  QStringList list = objectTypeNames();
 
   for (QString str : list) {
     QAction* addAction = addMenu->addAction(str);
@@ -589,27 +578,14 @@ void PropertiesDock::onAddComponentAction()
   if (action) {
     const QString &componentName = action->data().toString();
 
-
-
-//    for (Object * obj : mDocument->currentObjects()) {
-//      if (obj->typeId() == Object::MapObjectType) {
-
-//        QUndoStack *undoStack = mDocument->undoStack();
-//      undoStack->push(new AddComponent(mDocument,
-//                                       obj,
-//                                       componentName));
-//      }
-//    }
-
     QUndoStack *undoStack = mDocument->undoStack();
     undoStack->push(new AddComponent(mDocument,
                                      mDocument->currentObject(),
                                      componentName));
+  }
 
-
-
-
-
+  if (QApplication::queryKeyboardModifiers().testFlag(Qt::ShiftModifier)) {
+    mButtonAddComponent->click();
   }
 }
 
@@ -623,6 +599,10 @@ void PropertiesDock::onRemoveComponentAction()
     undoStack->push(new RemoveComponent(mDocument,
                                         mDocument->currentObject(),
                                         componentName));
+  }
+
+  if (QApplication::queryKeyboardModifiers().testFlag(Qt::ShiftModifier)) {
+    mButtonRemoveComponent->click();
   }
 }
 
@@ -677,8 +657,8 @@ void PropertiesDock::retranslateUi()
     mActionRenameProperty->setText(tr("Rename..."));
     mActionRenameProperty->setToolTip(tr("Rename Property"));
 
-    mActionAddComponent->setText(tr("Add Component"));
-    mActionRemoveComponent->setText(tr("Remove component"));
+    mButtonAddComponent->setText(tr("Add Component"));
+    mButtonRemoveComponent->setText(tr("Remove component"));
 }
 
 } // namespace Tiled

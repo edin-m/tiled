@@ -576,6 +576,8 @@ void PropertyBrowser::componentRemoved(Object *object, const QString &name)
 //        unsetFactoryForManager(it.value());
 //      }
 //    }
+
+    // very important
     unsetFactoryForManager(mComponentVariantManagers[name]);
 
     delete mComponents[name];
@@ -724,6 +726,7 @@ void PropertyBrowser::addMapProperties()
     addProperty(groupProperty);
 }
 
+// TODO: move this to object.h/cpp
 static QStringList objectTypeNames()
 {
     QStringList names;
@@ -2081,6 +2084,7 @@ void PropertyBrowser::updateCustomPropertyColor(const QString &name)
     property->setValueColor(textColor);
 }
 
+// adds the missing components from object to the browser
 void PropertyBrowser::addComponents()
 {
 //  qDebug() << __FUNCTION__;
@@ -2297,7 +2301,7 @@ void PropertyBrowser::addComponents()
 
 void PropertyBrowser::removeComponents()
 {
-  qDebug() << __FUNCTION__;
+//  qDebug() << __FUNCTION__;
   QScopedValueRollback<bool> updating(mUpdating, true);
 
 //  {

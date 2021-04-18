@@ -22,7 +22,7 @@
 
 #include <QDockWidget>
 #include <QVariant>
-#include <QMenu>
+#include <QToolButton>
 
 class QtBrowserItem;
 
@@ -68,7 +68,6 @@ private:
     void renamePropertyTo(const QString &name);
     void showContextMenu(const QPoint &pos);
 
-    QMenu* createAddComponentMenu();
     void setupComponentMenus();
     void onAddComponentAction();
     void onRemoveComponentAction();
@@ -81,10 +80,8 @@ private:
     QAction *mActionRemoveProperty;
     QAction *mActionRenameProperty;
 
-    QAction *mActionAddComponent;
-    QMenu *mMenuAddComponent;
-
-    QAction *mActionRemoveComponent;
+    QToolButton *mButtonAddComponent;
+    QToolButton *mButtonRemoveComponent;
 };
 
 } // namespace Tiled
