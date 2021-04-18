@@ -156,3 +156,52 @@ RenameProperty::RenameProperty(Document *document,
         new SetProperty(document, objects, newName, value, this);
     }
 }
+
+
+
+
+// move this to changecomponent .h .cpp
+
+AddComponent::AddComponent(Document *document,
+                           Object *object,
+                           const QString &name,
+                           QUndoCommand *parent)
+    : QUndoCommand(parent)
+      , mDocument(document)
+      , mObject(object)
+      , mName(name)
+{
+  setText(QCoreApplication::translate("Undo Commands", "Add Component"));
+}
+
+void AddComponent::undo()
+{
+  mDocument->removeComponent(mName, mObject);
+}
+
+void AddComponent::redo()
+{
+  mDocument->addComponent(mObject, mName);
+}
+
+RemoveComponent::RemoveComponent(Document *document,
+                                 Object *object,
+                                 const QString &name,
+                                 QUndoCommand *parent)
+    : QUndoCommand(parent)
+      , mDocument(document)
+      , mObject(object)
+      , mName(name)
+{
+  setText(QCoreApplication::translate("Undo Commands", "Remove Component"));
+}
+
+void RemoveComponent::undo()
+{
+  mDocument->addComponent(mObject, mName);
+}
+
+void RemoveComponent::redo()
+{
+  mDocument->removeComponent(mName, mObject);
+}

@@ -58,6 +58,8 @@ private:
     Properties mNewProperties;
 };
 
+// TODO: create SetComponentProperty command
+// to be able to undo redu component properties
 class SetProperty : public QUndoCommand
 {
 public:
@@ -90,6 +92,72 @@ private:
     QString mName;
     QVariant mValue;
 };
+
+
+
+
+
+class AddComponent : public QUndoCommand
+{
+ public:
+  AddComponent(Document *document,
+               Object *object,
+               const QString &name,
+               QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+ private:
+  Document *mDocument;
+  Object *mObject;
+  const QString mName;
+
+};
+
+class RemoveComponent : public QUndoCommand
+{
+ public:
+  RemoveComponent(Document *document,
+                  Object *object,
+                  const QString &name,
+                  QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+ private:
+  Document *mDocument;
+  Object *mObject;
+  const QString mName;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class RemoveProperty : public QUndoCommand
 {

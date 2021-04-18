@@ -71,9 +71,22 @@ PropertiesDock::PropertiesDock(QWidget *parent)
     connect(mActionRenameProperty, &QAction::triggered,
             this, &PropertiesDock::renameProperty);
 
+    mActionAddComponent = new QAction(this);
+    mActionAddComponent->setEnabled(true);
+    mActionAddComponent->setIcon(QIcon(QLatin1String(":/images/16/add.png")));
+    mActionAddComponent->setMenu(new QMenu(this));
+
+    mActionRemoveComponent = new QAction(this);
+    mActionRemoveComponent->setEnabled(true);
+    mActionRemoveComponent->setIcon(QIcon(QLatin1String(":/images/16/remove.png")));
+    mActionRemoveComponent->setMenu(new QMenu(this));
+    setupComponentMenus();
+
     Utils::setThemeIcon(mActionAddProperty, "add");
     Utils::setThemeIcon(mActionRemoveProperty, "remove");
     Utils::setThemeIcon(mActionRenameProperty, "rename");
+    Utils::setThemeIcon(mActionAddComponent, "add");
+    Utils::setThemeIcon(mActionRemoveComponent, "remove");
 
     QToolBar *toolBar = new QToolBar;
     toolBar->setFloatable(false);
@@ -82,6 +95,12 @@ PropertiesDock::PropertiesDock(QWidget *parent)
     toolBar->addAction(mActionAddProperty);
     toolBar->addAction(mActionRemoveProperty);
     toolBar->addAction(mActionRenameProperty);
+
+    QWidget* spacer = new QWidget();
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    toolBar->addWidget(spacer);
+    toolBar->addAction(mActionAddComponent);
+    toolBar->addAction(mActionRemoveComponent);
 
     QWidget *widget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(widget);
@@ -124,6 +143,13 @@ void PropertiesDock::setDocument(Document *document)
         connect(document, &Document::propertyRemoved,
                 this, &PropertiesDock::updateActions);
 
+        connect(document, &Document::currentObjectChanged,
+                this, &PropertiesDock::setupComponentMenus);
+        connect(document, &Document::componentAdded,
+                this, &PropertiesDock::setupComponentMenus);
+        connect(document, &Document::componentRemoved,
+                this, &PropertiesDock::setupComponentMenus);
+
         currentObjectChanged(document->currentObject());
     } else {
         currentObjectChanged(nullptr);
@@ -162,6 +188,20 @@ void PropertiesDock::currentObjectChanged(Object *object)
 
     mPropertyBrowser->setEnabled(object);
     mActionAddProperty->setEnabled(enabled);
+
+
+    {
+      bool isMapObject = false;
+
+      if (object) {
+        isMapObject = mDocument &&
+                      mDocument->type() == Document::MapDocumentType &&
+                      object->typeId() == Object::MapObjectType;
+      }
+
+      mActionAddComponent->setEnabled(isMapObject);
+      mActionRemoveComponent->setEnabled(isMapObject);
+    }
 }
 
 void PropertiesDock::updateActions()
@@ -479,6 +519,113 @@ void PropertiesDock::showContextMenu(const QPoint &pos)
     }
 }
 
+QMenu* PropertiesDock::createAddComponentMenu()
+{
+  QMenu* menu = new QMenu(this);
+
+  // TODO: convert object types to string list
+  // TODO: enable/disable actions for components already part of the object
+
+  QStringList list;
+  list << tr("Transformation") << tr("Physics");
+  list << tr("Boss") << tr("Collectable");
+  list << tr("Fruit") << tr("NPC");
+  list << tr("Patrol") << tr("Sound");
+
+  for (QString str : list) {
+    QAction* action = menu->addAction(str);
+    action->setData(QVariant(str));
+    connect(action, &QAction::triggered, this, &PropertiesDock::onAddComponentAction);
+  }
+
+  return menu;
+}
+
+void PropertiesDock::setupComponentMenus()
+{
+  QMenu *addMenu = mActionAddComponent->menu();
+  QMenu *removeMenu = mActionRemoveComponent->menu();
+
+  addMenu->clear();
+  removeMenu->clear();
+
+  if (!mDocument || !mDocument->currentObject()) {
+    return;
+  }
+
+  if (mDocument->currentObject()->typeId() != Object::MapObjectType) {
+    return;
+  }
+
+  QStringList list;
+  // TODO: populate list usgin object types
+  list << tr("Transformation") << tr("Physics");
+  list << tr("Boss") << tr("Collectable");
+  list << tr("Fruit") << tr("NPC");
+  list << tr("Patrol") << tr("Sound");
+
+  for (QString str : list) {
+    QAction* addAction = addMenu->addAction(str);
+    addAction->setData(QVariant(str));
+    connect(addAction, &QAction::triggered, this, &PropertiesDock::onAddComponentAction);
+
+    QAction* removeAction = removeMenu->addAction(str);
+    removeAction->setData(QVariant(str));
+    connect(removeAction, &QAction::triggered, this, &PropertiesDock::onRemoveComponentAction);
+
+    if (mDocument->currentObject()->hasComponent(str)) {
+      addAction->setEnabled(false);
+      removeAction->setEnabled(true);
+    } else {
+      addAction->setEnabled(true);
+      removeAction->setEnabled(false);
+    }
+  }
+}
+
+void PropertiesDock::onAddComponentAction()
+{
+  QAction* action = qobject_cast<QAction*>(sender());
+  if (action) {
+    const QString &componentName = action->data().toString();
+
+
+
+//    for (Object * obj : mDocument->currentObjects()) {
+//      if (obj->typeId() == Object::MapObjectType) {
+
+//        QUndoStack *undoStack = mDocument->undoStack();
+//      undoStack->push(new AddComponent(mDocument,
+//                                       obj,
+//                                       componentName));
+//      }
+//    }
+
+    QUndoStack *undoStack = mDocument->undoStack();
+    undoStack->push(new AddComponent(mDocument,
+                                     mDocument->currentObject(),
+                                     componentName));
+
+
+
+
+
+  }
+}
+
+void PropertiesDock::onRemoveComponentAction()
+{
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action) {
+    const QString &componentName = action->data().toString();
+
+    QUndoStack *undoStack = mDocument->undoStack();
+    undoStack->push(new RemoveComponent(mDocument,
+                                        mDocument->currentObject(),
+                                        componentName));
+  }
+}
+
 bool PropertiesDock::event(QEvent *event)
 {
     switch (event->type()) {
@@ -529,6 +676,9 @@ void PropertiesDock::retranslateUi()
 
     mActionRenameProperty->setText(tr("Rename..."));
     mActionRenameProperty->setToolTip(tr("Rename Property"));
+
+    mActionAddComponent->setText(tr("Add Component"));
+    mActionRemoveComponent->setText(tr("Remove component"));
 }
 
 } // namespace Tiled

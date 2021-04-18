@@ -105,6 +105,9 @@ public:
     void setProperties(Object *object, const Properties &properties);
     void removeProperty(Object *object, const QString &name);
 
+    void addComponent(Object *object, const QString &name);
+    void removeComponent(const QString &name, Object *object);
+
     bool ignoreBrokenLinks() const;
     void setIgnoreBrokenLinks(bool ignoreBrokenLinks);
 
@@ -140,6 +143,9 @@ signals:
     void propertyRemoved(Object *object, const QString &name);
     void propertyChanged(Object *object, const QString &name);
     void propertiesChanged(Object *object);
+
+    void componentAdded(Object *object, const QString &name);
+    void componentRemoved(Object *object, const QString &name);
 
     void ignoreBrokenLinksChanged(bool ignoreBrokenLinks);
 

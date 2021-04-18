@@ -117,7 +117,7 @@ QList<Object *> Document::currentObjects() const
         objects.append(mCurrentObject);
     return objects;
 }
-
+// TODO: add setComponentProperty to set component properties
 void Document::setProperty(Object *object,
                            const QString &name,
                            const QVariant &value)
@@ -142,6 +142,24 @@ void Document::removeProperty(Object *object, const QString &name)
 {
     object->removeProperty(name);
     emit propertyRemoved(object, name);
+}
+
+void Document::addComponent(Object *object, const QString &name)
+{
+  if (!object->hasComponent(name)) {
+    object->addComponent(name);
+
+    emit componentAdded(object, name);
+  }
+}
+
+void Document::removeComponent(const QString &name, Object *object)
+{
+  if (object->hasComponent(name)) {
+    object->removeComponent(name);
+
+    emit componentRemoved(object, name);
+  }
 }
 
 void Document::setIgnoreBrokenLinks(bool ignoreBrokenLinks)

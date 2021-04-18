@@ -289,8 +289,9 @@ public:
         QtAbstractPropertyManager *abstractManager = manager;
         QtAbstractEditorFactoryBase *abstractFactory = factory;
 
-        if (addFactory(abstractManager, abstractFactory))
+        if (addFactory(abstractManager, abstractFactory)) {
             factory->addPropertyManager(manager);
+        }
     }
 
     void unsetFactoryForManager(QtAbstractPropertyManager *manager);

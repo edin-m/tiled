@@ -23,8 +23,10 @@
 #include "changeevents.h"
 #include "map.h"
 #include "properties.h"
+#include "varianteditorfactory.h"
 
 #include <QtTreePropertyBrowser>
+#include <QtVariantEditorFactory>
 
 #include <QHash>
 
@@ -85,6 +87,10 @@ private:
     void propertyRemoved(Object *object, const QString &name);
     void propertyChanged(Object *object, const QString &name);
     void propertiesChanged(Object *object);
+
+    void componentAdded(Object *object, const QString &name);
+    void componentRemoved(Object *object, const QString &name);
+
     void selectedObjectsChanged();
     void selectedLayersChanged();
     void selectedTilesChanged();
@@ -199,6 +205,10 @@ private:
     void updateCustomProperties();
     void updateCustomPropertyColor(const QString &name);
 
+    void addComponents();
+    void removeComponents();
+    void updateComponents();
+
     QVariant toDisplayValue(const QVariant &value) const;
     QVariant fromDisplayValue(const QVariant &value) const;
 
@@ -211,15 +221,37 @@ private:
     MapDocument *mMapDocument = nullptr;
     TilesetDocument *mTilesetDocument = nullptr;
 
+    VariantEditorFactory *mVariantFactory;
+
+    // manager owning the properties
+    //  - component properties should be in own managers
     QtVariantPropertyManager *mVariantManager;
+
+    // stores property groups,
+    //  object properties
+    //  tile properties
+    //  component properties
     QtGroupPropertyManager *mGroupManager;
+
+    // custom properties
     QtProperty *mCustomPropertiesGroup;
 
+    // components
+
+    // map of properties to property types
     QHash<QtProperty *, PropertyId> mPropertyToId;
+    // map default property to property
     QHash<PropertyId, QtVariantProperty *> mIdToProperty;
+
+    // maps property name to property value
+    //  needed to update custom property color
+    //
     QHash<QString, QtVariantProperty *> mNameToProperty;
 
-    Properties mCombinedProperties;
+    QHash<QString, QtProperty *> mComponents;
+    QHash<QString, QtVariantPropertyManager *> mComponentVariantManagers;
+
+//    Properties mCombinedProperties;
 
     QStringList mStaggerAxisNames;
     QStringList mStaggerIndexNames;
