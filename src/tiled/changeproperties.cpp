@@ -205,3 +205,32 @@ void RemoveComponent::redo()
 {
   mDocument->removeComponent(mName, mObject);
 }
+
+SetComponentProperty::SetComponentProperty(Document *document,
+                                           Object *object,
+                                           const QString &componentName,
+                                           const QString &propertyName,
+                                           QVariant value,
+                                           QUndoCommand *parent)
+    : QUndoCommand(parent)
+      , mDocument(document)
+      , mObject(object)
+      , mComponentName(componentName)
+      , mPropertyName(propertyName)
+      , mNewValue(value)
+{
+  Properties &props = mObject->componentProperties(componentName);
+  mOldValue = props[propertyName];
+}
+
+void SetComponentProperty::undo()
+{
+  mDocument->setComponentProperty(mObject, mComponentName, mPropertyName, mOldValue);
+}
+
+void SetComponentProperty::redo()
+{
+  mDocument->setComponentProperty(mObject, mComponentName, mPropertyName, mNewValue);
+}
+
+

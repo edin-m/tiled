@@ -162,6 +162,19 @@ void Document::removeComponent(const QString &name, Object *object)
   }
 }
 
+void Document::setComponentProperty(Object *object,
+                                    const QString &componentName,
+                                    const QString &propertyName,
+                                    const QVariant &value)
+{
+  if (object->hasComponent(componentName)) {
+    Properties &props = object->componentProperties(componentName);
+    props[propertyName] = value;
+
+    emit componentPropertyChanged(object, componentName, propertyName, value);
+  }
+}
+
 void Document::setIgnoreBrokenLinks(bool ignoreBrokenLinks)
 {
     if (mIgnoreBrokenLinks == ignoreBrokenLinks)

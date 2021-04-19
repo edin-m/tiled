@@ -89,7 +89,7 @@ private:
     void propertiesChanged(Object *object);
 
     void componentAdded(Object *object, const QString &name);
-    void componentRemoved(Object *object, const QString &name);
+    void removeComponent(Object *object, const QString &name);
 
     void selectedObjectsChanged();
     void selectedLayersChanged();
@@ -208,6 +208,8 @@ private:
     void addComponents();
     void removeComponents();
     void updateComponents();
+    void onComponentPropertyChanged(Object *object, const QString &componentName, const QString &propertyName, const QVariant &value);
+    void onComponentValueChanged(QtProperty *property, const QVariant &value);
 
     QVariant toDisplayValue(const QVariant &value) const;
     QVariant fromDisplayValue(const QVariant &value) const;
@@ -248,8 +250,12 @@ private:
     //
     QHash<QString, QtVariantProperty *> mNameToProperty;
 
+    QHash<QtProperty *, QString> mMapComponentProperty;
     QHash<QString, QtProperty *> mComponents;
     QHash<QString, QtVariantPropertyManager *> mComponentVariantManagers;
+
+    // component name -> (property name -> property)
+    QHash<QString, QHash<QString, QtVariantProperty *>> mMapComponentPropertyField;
 
 //    Properties mCombinedProperties;
 

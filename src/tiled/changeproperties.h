@@ -131,6 +131,26 @@ class RemoveComponent : public QUndoCommand
   const QString mName;
 };
 
+class SetComponentProperty : public QUndoCommand
+{
+ public:
+  SetComponentProperty(Document *document,
+                       Object *object,
+                       const QString &componentName,
+                       const QString &propertyName,
+                       QVariant value,
+                       QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+ private:
+  Document *mDocument;
+  Object *mObject;
+  const QString mComponentName;
+  const QString mPropertyName;
+  QVariant mOldValue;
+  const QVariant mNewValue;
+};
 
 
 

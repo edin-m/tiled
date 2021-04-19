@@ -32,6 +32,7 @@
 #include "tileset.h"
 #include "utils.h"
 #include "variantpropertymanager.h"
+#include "preferences.h"
 
 #include <QAction>
 #include <QEvent>
