@@ -32,6 +32,7 @@
 #include "changeselectedarea.h"
 #include "containerhelpers.h"
 #include "editablemap.h"
+#include "exporthelper.h"
 #include "flipmapobjects.h"
 #include "grouplayer.h"
 #include "imagelayer.h"
@@ -129,7 +130,10 @@ bool MapDocument::save(const QString &fileName, QString *error)
         return false;
     }
 
-    if (!mapFormat->write(map(), fileName)) {
+    // feels weird using export helper for non-export saving but I need to propagate
+    // export options (through format options, maybe introduce export options?)
+    ExportHelper exportHelper;
+    if (!mapFormat->write(map(), fileName, exportHelper.formatOptions())) {
         if (error)
             *error = mapFormat->errorString();
         return false;

@@ -283,6 +283,9 @@ public:
     Layer *findLayerById(int layerId) const;
     MapObject *findObjectById(int objectId) const;
 
+    bool componentsAsProperties() const;
+    void setComponentsAsProperties(bool value);
+
     QRegion tileRegion() const;
 
 private:
@@ -312,6 +315,7 @@ private:
     LayerDataFormat mLayerDataFormat = Base64Zlib;
     int mNextLayerId = 1;
     int mNextObjectId = 1;
+    bool mComponentsAsProperties = true;
 };
 
 

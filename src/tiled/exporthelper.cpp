@@ -33,6 +33,12 @@ FileFormat::Options ExportHelper::formatOptions() const
     FileFormat::Options options;
     if (mOptions.testFlag(Preferences::ExportMinimized))
         options |= FileFormat::WriteMinimized;
+
+    // I'd rather create export options and pass it into the format.write() but
+    // I didn't want to change the method interface
+    if (mOptions.testFlag(Preferences::ExportComponentsSeparately))
+        options |= FileFormat::ExportComponentsSeparately;
+
     return options;
 }
 
@@ -97,6 +103,8 @@ SharedTileset ExportHelper::prepareExportTileset(const SharedTileset &tileset,
         }
     }
 
+    // DO i need to resolve components for tileset here?
+
     return exportTileset;
 }
 
@@ -137,6 +145,10 @@ const Map *ExportHelper::prepareExportMap(const Map *map, std::unique_ptr<Map> &
         for (Layer *layer : exportMap->objectGroups())
             for (MapObject *object : *static_cast<ObjectGroup*>(layer))
                 resolveTypeAndProperties(object);
+
+    // TODO: support for components as properties
+    if (mOptions.testFlag(Preferences::ExportComponentsSeparately))
+        resolveComponentsExport(exportMap);
 
     const auto tilesets = exportMap->tilesets();    // needs a copy
     for (const SharedTileset &tileset : tilesets) {
@@ -179,6 +191,16 @@ void ExportHelper::resolveTypeAndProperties(MapObject *object) const
     mergeProperties(properties, object->properties());
 
     object->setProperties(properties);
+}
+
+void ExportHelper::resolveComponentsExport(std::unique_ptr<Map> &exportMap) const
+{
+
+    // map components
+
+    // layer components
+
+    // object components
 }
 
 } // namespace Tiled

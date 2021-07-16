@@ -52,6 +52,7 @@ bool TmxMapFormat::write(const Map *map, const QString &fileName, Options option
 {
     MapWriter writer;
     writer.setMinimizeOutput(options.testFlag(WriteMinimized));
+    writer.setExportComponentsSeparately(options.testFlag(FileFormat::ExportComponentsSeparately));
 
     bool result = writer.writeMap(map, fileName);
     if (!result)

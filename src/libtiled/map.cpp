@@ -370,6 +370,7 @@ std::unique_ptr<Map> Map::clone() const
     o->mNextLayerId = mNextLayerId;
     o->mNextObjectId = mNextObjectId;
     o->setProperties(properties());
+    o->setComponents(components());
     return o;
 }
 
@@ -422,6 +423,16 @@ MapObject *Map::findObjectById(int objectId) const
         }
     }
     return nullptr;
+}
+
+bool Map::componentsAsProperties() const
+{
+    return mComponentsAsProperties;
+}
+
+void Map::setComponentsAsProperties(bool value)
+{
+    mComponentsAsProperties = value;
 }
 
 QRegion Map::tileRegion() const

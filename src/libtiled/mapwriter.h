@@ -118,6 +118,12 @@ public:
     void setMinimizeOutput(bool enabled);
     bool minimizeOutput() const;
 
+    /**
+     * Sets whether to export components separately.
+     */
+    void setExportComponentsSeparately(bool enabled);
+    bool exportComponentsSeparately() const;
+
 private:
     Q_DISABLE_COPY(MapWriter)
 

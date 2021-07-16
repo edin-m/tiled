@@ -49,6 +49,8 @@ public:
 private:
     void resolveTypeAndProperties(MapObject *object) const;
 
+    void resolveComponentsExport(std::unique_ptr<Map> &exportMap) const;
+
     const Preferences::ExportOptions mOptions;
 };
 

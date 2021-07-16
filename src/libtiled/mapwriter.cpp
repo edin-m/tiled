@@ -78,6 +78,7 @@ public:
     bool mDtdEnabled { false };
     bool mMinimize { false };
     QSize mChunkSize { CHUNK_SIZE, CHUNK_SIZE };
+    bool mExportComponentsSeparately { false };
 
 private:
     void writeMap(QXmlStreamWriter &w, const Map &map);
@@ -95,6 +96,8 @@ private:
     void writeProperties(QXmlStreamWriter &w,
                          const Properties &properties);
     void writeComponents(QXmlStreamWriter &w, const Components &components);
+    void writeComponentsSeparately(QXmlStreamWriter &w, const Components &components);
+    void writeComponentsAsPropertries(QXmlStreamWriter &w, const Components &components);
 
     QDir mDir;      // The directory in which the file is being saved
     GidMapper mGidMapper;
@@ -195,7 +198,7 @@ void MapWriterPrivate::writeMap(QXmlStreamWriter &w, const Map &map)
     const QString orientation = orientationToString(map.orientation());
     const QString renderOrder = renderOrderToString(map.renderOrder());
 
-    w.writeAttribute(QStringLiteral("version"), QLatin1String("1.5"));
+    w.writeAttribute(QStringLiteral("version"), QLatin1String("1.5")); // TODO: change version
     w.writeAttribute(QStringLiteral("tiledversion"), QCoreApplication::applicationVersion());
     w.writeAttribute(QStringLiteral("orientation"), orientation);
     w.writeAttribute(QStringLiteral("renderorder"), renderOrder);
@@ -231,6 +234,10 @@ void MapWriterPrivate::writeMap(QXmlStreamWriter &w, const Map &map)
                      QString::number(map.nextLayerId()));
     w.writeAttribute(QStringLiteral("nextobjectid"),
                      QString::number(map.nextObjectId()));
+
+    w.writeAttribute(QStringLiteral("componentsAsProperties"),
+                     map.componentsAsProperties() ?
+                       QStringLiteral("true") : QStringLiteral("false"));
 
     if (map.chunkSize() != QSize(CHUNK_SIZE, CHUNK_SIZE) || !map.exportFileName.isEmpty() || !map.exportFormat.isEmpty()) {
         w.writeStartElement(QStringLiteral("editorsettings"));
@@ -951,6 +958,14 @@ void MapWriterPrivate::writeProperties(QXmlStreamWriter &w,
 void MapWriterPrivate::writeComponents(QXmlStreamWriter &w,
                                        const Components &components)
 {
+    if (mExportComponentsSeparately)
+        writeComponentsSeparately(w, components);
+    else
+        writeComponentsAsPropertries(w, components);
+}
+
+void MapWriterPrivate::writeComponentsSeparately(QXmlStreamWriter &w, const Components &components)
+{
     if (components.isEmpty())
         return;
 
@@ -972,6 +987,11 @@ void MapWriterPrivate::writeComponents(QXmlStreamWriter &w,
     }
 
     w.writeEndElement();
+}
+
+void MapWriterPrivate::writeComponentsAsPropertries(QXmlStreamWriter &w, const Components &components)
+{
+    qDebug() << __FUNCTION__;
 }
 
 
@@ -1086,4 +1106,14 @@ void MapWriter::setMinimizeOutput(bool enabled)
 bool MapWriter::minimizeOutput() const
 {
     return d->mMinimize;
+}
+
+void MapWriter::setExportComponentsSeparately(bool enabled)
+{
+    d->mExportComponentsSeparately = enabled;
+}
+
+bool MapWriter::exportComponentsSeparately() const
+{
+    return d->mExportComponentsSeparately;
 }

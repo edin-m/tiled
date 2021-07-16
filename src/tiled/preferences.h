@@ -118,6 +118,7 @@ public:
         DetachTemplateInstances         = 0x2,
         ResolveObjectTypesAndProperties = 0x4,
         ExportMinimized                 = 0x8,
+        ExportComponentsSeparately      = 0x16
     };
     Q_DECLARE_FLAGS(ExportOptions, ExportOption)
 

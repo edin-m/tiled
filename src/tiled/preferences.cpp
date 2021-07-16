@@ -432,6 +432,8 @@ Preferences::ExportOptions Preferences::exportOptions() const
         options |= ResolveObjectTypesAndProperties;
     if (get("Export/Minimized", false))
         options |= ExportMinimized;
+    if (get("Export/ExportComponentsSeparately", false))
+        options |= ExportComponentsSeparately;
 
     return options;
 }
@@ -451,6 +453,9 @@ void Preferences::setExportOption(Preferences::ExportOption option, bool value)
     case ExportMinimized:
         setValue(QLatin1String("Export/Minimized"), value);
         break;
+    case ExportComponentsSeparately:
+        setValue(QLatin1String("Export/ExportComponentsSeparately"), value);
+        break;
     }
 }
 
@@ -465,6 +470,8 @@ bool Preferences::exportOption(Preferences::ExportOption option) const
         return get("Export/ResolveObjectTypesAndProperties", false);
     case ExportMinimized:
         return get("Export/Minimized", false);
+    case ExportComponentsSeparately:
+        return get("Export/ExportComponentsSeparately", false);
     }
     return false;
 }

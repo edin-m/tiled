@@ -449,7 +449,7 @@ void MapObject::detachFromTemplate()
     Properties newProperties = base->properties();
     Tiled::mergeProperties(newProperties, properties());
     setProperties(newProperties);
-
+    //do i need to set components here
     setObjectTemplate(nullptr);
 }
 

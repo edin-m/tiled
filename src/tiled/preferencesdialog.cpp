@@ -107,6 +107,9 @@ PreferencesDialog::PreferencesDialog(QWidget *parent)
     connect(mUi->minimizeOutput, &QCheckBox::toggled, preferences, [preferences] (bool value) {
         preferences->setExportOption(Preferences::ExportMinimized, value);
     });
+    connect(mUi->exportComponentsSeparately, &QCheckBox::toggled, preferences, [preferences] (bool value) {
+        preferences->setExportOption(Preferences::ExportComponentsSeparately, value);
+    });
 
 #ifdef TILED_SENTRY
     connect(mUi->sendCrashReports, &QCheckBox::toggled, [] (bool value) {
@@ -207,6 +210,7 @@ void PreferencesDialog::fromPreferences()
     mUi->detachTemplateInstances->setChecked(prefs->exportOption(Preferences::DetachTemplateInstances));
     mUi->resolveObjectTypesAndProperties->setChecked(prefs->exportOption(Preferences::ResolveObjectTypesAndProperties));
     mUi->minimizeOutput->setChecked(prefs->exportOption(Preferences::ExportMinimized));
+    mUi->exportComponentsSeparately->setChecked(prefs->exportOption(Preferences::ExportComponentsSeparately));
 
 #ifdef TILED_SENTRY
     mUi->sendCrashReports->setChecked(Sentry::instance()->userConsent() == Sentry::ConsentGiven);

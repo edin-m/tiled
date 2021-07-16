@@ -228,6 +228,7 @@ Layer *Layer::initializeClone(Layer *clone) const
     clone->mTintColor = mTintColor;
     clone->mVisible = mVisible;
     clone->setProperties(properties());
+    clone->setComponents(components());
     return clone;
 }
 

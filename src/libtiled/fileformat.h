@@ -51,6 +51,7 @@ public:
 
     enum Option {
         WriteMinimized  = 0x1,
+        ExportComponentsSeparately = 0x2
     };
     Q_DECLARE_FLAGS(Options, Option)
 

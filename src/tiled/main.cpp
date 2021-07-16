@@ -280,7 +280,7 @@ void CommandLineHandler::setExportTileset()
 {
     exportTileset = true;
 }
-
+// TODO: maybe add "export components separately" support
 void CommandLineHandler::setExportEmbedTilesets()
 {
     exportOptions |= Preferences::EmbedTilesets;
